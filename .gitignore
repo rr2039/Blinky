@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+Firmware/\.settings/
+
+Firmware/\.cproject
+
+Firmware/\.project
