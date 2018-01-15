@@ -8,6 +8,7 @@
 
 // potValue and ledValues[] from main file
 extern uint8_t ledValues[4];
+extern uint16_t timerval;
 //extern uint16_t potValue; /* TODO: Make potentiometer actually relevant */
 
 // Function for solid light mode.
@@ -23,9 +24,9 @@ void solid()
 void flashing()
 {
 	static bool state; /* 0 for off, 1 for on */
-	uint16_t interval = 2048; /* Sets interval (in ms) to change states */
+	uint16_t interval = 400; /* Sets interval (in ms) to change states */
 	// TODO: Make it so the potentiometer can change the interval.
-	if(millis() % interval == 0)
+	if(timerval % interval == 0)
 	{
 		state = !state;
 		for (uint8_t i = 0; i < 4; i++)
@@ -39,13 +40,13 @@ void flashing()
 void looping()
 {
 	static byte bits; /* Just a byte.  Initially set to 0b00000001 */
-	uint16_t interval = 512;
+	uint16_t interval = 256;
 	// TODO: Make it so the potentiometer can change the interval.
 	// Make sure at least one bit is always active.
 		if(bits == 0)
 			bits = 1;
 	// Only run when the interval elapses.
-	if(millis() % interval == 0)
+	if(timerval % interval == 0)
 	{
 		for(uint8_t i = 0; i < 4; i++)
 		{

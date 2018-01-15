@@ -13,6 +13,8 @@ volatile Modes mode = SETUP; /* Current mode.  Volatile due to ISR */
 uint8_t ledValues[4] = {0, 0, 0, 0};
 uint16_t potValue = 0;
 
+// Timer variable.  Truncatimg millis()'s long long result into 16 bits makes modulo faster.
+uint16_t timerval;
 
 //The setup function is called once at startup of the sketch
 void setup()
@@ -47,6 +49,9 @@ void changeMode()  // ISR for BUTTONPIN
 // The loop function is called in an endless loop
 void loop()
 {
+	// Update the timer value of this frame.
+	timerval = (uint16_t)millis();
+
 	// Run the frame function of whatever mode we're in.
 	switch(mode)
 	{
