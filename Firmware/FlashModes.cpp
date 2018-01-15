@@ -8,7 +8,8 @@
 
 // potValue and ledValues[] from main file
 extern uint8_t ledValues[4];
-extern uint16_t timerval;
+extern uint16_t counter;
+
 //extern uint16_t potValue; /* TODO: Make potentiometer actually relevant */
 
 // Function for solid light mode.
@@ -24,65 +25,86 @@ void solid()
 void flashing()
 {
 	static bool state; /* 0 for off, 1 for on */
-	uint16_t interval = 400; /* Sets interval (in ms) to change states */
-	// TODO: Make it so the potentiometer can change the interval.
-	if(timerval % interval == 0)
-	{
+
+	// Counter timing's a bit arbitrary but 2048 seems to be a decently fast flash.
+	if ((counter % 2048) == 0)
 		state = !state;
-		for (uint8_t i = 0; i < 4; i++)
-		{
-			ledValues[i] = (255 * state);
-		}
+	for(uint8_t i = 0; i<4; i++)
+	{
+		ledValues[i] = ((uint8_t)state) ? 255 : 0 ;
 	}
+
 }
 
 // Function for looping light mode
 void looping()
 {
-	static byte bits; /* Just a byte.  Initially set to 0b00000001 */
-	uint16_t interval = 256;
-	// TODO: Make it so the potentiometer can change the interval.
-	// Make sure at least one bit is always active.
-		if(bits == 0)
-			bits = 1;
-	// Only run when the interval elapses.
-	if(timerval % interval == 0)
+	static byte bits; /* Just a byte.  Initially set to 0b00000001 by the first part of that if statement down there.*/
+	uint16_t interval = 2048; /* Counter timing can vary but usually 2048 is good enough value */
+
+	if (counter % interval == 0) /* only calculate this stuff on the interval */
 	{
-		for(uint8_t i = 0; i < 4; i++)
+		if (bits == 0) /* Never let bits be 0.  Always have one bit to shift through. */
+			bits = 1;
+
+		/*
+		 * Is this switch/case structure the best way to solve this problem?  No.  But for some reason comparisons to
+		 * powers of two like in the old versions didn't work, so here we are.
+		 */
+		switch(bits)
 		{
-			// Turn on the LED set that corresponds to the right power of two.
-			// I am definitely not multiplying by a boolean.  Definitely not.
-			ledValues[i] = ((bits == pow(2, i)) * 255);
+		case 1:
+		case 16:
+			ledValues[0] = 255;
+			ledValues[1] = 0;
+			ledValues[2] = 0;
+			ledValues[3] = 0;
+			break;
+		case 2:
+		case 32:
+			ledValues[0] = 0;
+			ledValues[1] = 255;
+			ledValues[2] = 0;
+			ledValues[3] = 0;
+			break;
+		case 4:
+		case 64:
+			ledValues[0] = 0;
+			ledValues[1] = 0;
+			ledValues[2] = 255;
+			ledValues[3] = 0;
+			break;
+		case 8:
+		case 128:
+			ledValues[0] = 0;
+			ledValues[1] = 0;
+			ledValues[2] = 0;
+			ledValues[3] = 255;
+			break;
+		default:
+			ledValues[0] = 0;
+			ledValues[1] = 255;
+			ledValues[2] = 255;
+			ledValues[3] = 0;
+			break;
 		}
-		// Now change which power of two will be active next time.
-		bits <<= 1;
+		bits <<= 1; /* This is where the magic happens and the bit gets shifted through. */
+
 	}
+
+
 }
 
 // Function for pulsing light mode
 void pulsing()
 {
-	static uint8_t value; /* Since value is uniform throughout all lights, just work with one variable. */
-	uint8_t increment; /* How much to change the value by. */
-	bool reverse; /* False: Negative.  True: Positive. */
-	increment = 1; /* TODO: Make this depend on the potentiometer.*/
-
-	if(value == 255 || value == 0)
-		reverse = !reverse;
-	if(reverse)
-		value += increment;
-	else
-		value -= increment;
-	for(uint8_t i = 0; i < 4; i++)
-	{
-		ledValues[i] = value;
-	}
+	; //TODO: Fix this function too.
 }
 
 // Function for off light mode.  I know, this probably doesn't need to exist, but oh well.
 void off()
 {
-	for(int i = 0; i<4; i++)
+	for(uint8_t i = 0; i<4; i++)
 		{
 			ledValues[i] = 0;
 		}
